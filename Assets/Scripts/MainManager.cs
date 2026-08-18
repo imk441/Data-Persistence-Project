@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using UnityEngine.InputSystem; // MIGRATED: New Input System namespace
+using UnityEngine.InputSystem; 
 
 public class MainManager : MonoBehaviour
 {
@@ -12,11 +12,12 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
 
     public Text ScoreText;
+    public Text ScoreNameTxt;
     public GameObject GameOverText;
 
     private bool m_Started = false;
     private int m_Points;
-
+    private string currentPlayerName;  //changerd
     private bool m_GameOver = false;
 
     // MIGRATED: InputAction replaces Input.GetKeyDown(KeyCode.Space)
@@ -43,10 +44,15 @@ public class MainManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        currentPlayerName = PlayerPrefs.GetString("PlayerName", "Player");   // changed
+        int savedScore = PlayerPrefs.GetInt("BestScore", 0);
+        string savedName = PlayerPrefs.GetString("BestName", "None"); //changed"none"
+        ScoreNameTxt.text= $"Best Score : {savedName} : {savedScore}";
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
+        
 
-        int[] pointCountArray = new [] {1,1,2,2,5,5};
+        int[] pointCountArray = new[] { 1, 1, 2, 2, 5, 5 };
         for (int i = 0; i < LineCount; ++i)
         {
             for (int x = 0; x < perLine; ++x)
@@ -93,5 +99,19 @@ public class MainManager : MonoBehaviour
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+
+        int currentBestScore = PlayerPrefs.GetInt("BestScore", 0);
+
+        // Add the { } braces here to make sure this only happens on a NEW record
+        if (m_Points > currentBestScore)
+        {
+            PlayerPrefs.SetInt("BestScore", m_Points);
+            PlayerPrefs.SetString("BestName", currentPlayerName);
+            PlayerPrefs.Save();
+
+            // This only updates the text if the current player actually beat the record
+            ScoreNameTxt.text = $"Best Score : {currentPlayerName} : {m_Points}";
+        }
+        // If the score is NOT greater, it does nothing, so the old name stays on screen!
     }
 }
